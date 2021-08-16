@@ -1,4 +1,4 @@
-module api-client
+module github.com/INFURA/ipfs-upload-client
 
 go 1.15
 
