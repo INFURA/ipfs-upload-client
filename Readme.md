@@ -4,6 +4,10 @@
 
 `ipfs-upload-client --id xxxxx --secret yyyyy /path/to/data`
 
+## Installation
+
+Pre-compiled binaries are available in the [latest release page](https://github.com/INFURA/ipfs-upload-client/releases/latest).
+
 ## Options
 ```
   --id string       your Infura ProjectID
