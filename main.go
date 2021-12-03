@@ -77,7 +77,7 @@ func main() {
 		}
 	}()
 
-	resolved, err := client.Unixfs().Add(ctx, file, caopts.Unixfs.Pin(*pin))
+	resolved, err := client.Unixfs().Add(ctx, file, caopts.Unixfs.Pin(*pin), caopts.Unixfs.Progress(true))
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(-1)
