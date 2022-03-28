@@ -15,3 +15,14 @@ Pre-compiled binaries are available in the [latest release page](https://github.
   --secret string   your Infura ProjectSecret
   --url string      the API URL (default "https://ipfs.infura.io:5001")
 ```
+
+### Load options from configuration file
+
+Create `.infura-ipfs-upload-client` file in your home directory.
+
+```
+ID=<YOUR INFURA PROJECT ID>
+PIN=<WHETHER OR NOT TO PIN THE DATA OR NOT. (true / false)>
+SECRET=<YOUR INFURA PROJECT SECRET>
+URL=<THE API URL>
+```
