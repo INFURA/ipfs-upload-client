@@ -12,34 +12,60 @@ import (
 	httpapi "github.com/ipfs/go-ipfs-http-client"
 	caopts "github.com/ipfs/interface-go-ipfs-core/options"
 	flag "github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 const infuraAPI = "https://ipfs.infura.io:5001"
 
 func main() {
-	projectId := flag.String("id", "", "your Infura ProjectID")
-	projectSecret := flag.String("secret", "", "your Infura ProjectSecret")
-	api := flag.String("url", infuraAPI, "the API URL")
-	pin := flag.Bool("pin", true, "whether or not to pin the data")
+	// read configuration file
+	viper.SetDefault("PIN", "true")
+	viper.SetDefault("URL", "https://ipfs.infura.io:5001")
+	viper.SetConfigName(".infura-ipfs-upload-client")
+	viper.SetConfigType("env")
+	viper.AddConfigPath("$HOME")
+	viper.AddConfigPath(".")
+
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// Config file not found
+		} else {
+			// Config file was found but another error was produced
+			panic(fmt.Errorf("fatal error parsing config file: %w", err))
+		}
+	}
+
+	flag.String("id", "", "your Infura ProjectID")
+	flag.String("secret", "", "your Infura ProjectSecret")
+	flag.String("url", infuraAPI, "the API URL")
+	flag.Bool("pin", true, "whether or not to pin the data")
 
 	flag.Parse()
+	viper.BindPFlags(flag.CommandLine)
 
-	if *projectId == "" {
+	projectId := viper.GetString("id")
+	projectSecret := viper.GetString("secret")
+	api := viper.GetString("url")
+	pin := viper.GetBool("pin")
+
+	if projectId == "" {
 		_, _ = fmt.Fprintln(os.Stderr, "parameter --id is required")
 		os.Exit(-1)
 	}
-	if *projectSecret == "" {
+	if projectSecret == "" {
 		_, _ = fmt.Fprintln(os.Stderr, "parameter --secret is required")
 		os.Exit(-1)
 	}
 
 	httpClient := &http.Client{}
-	client, err := httpapi.NewURLApiWithClient(*api, httpClient)
+	client, err := httpapi.NewURLApiWithClient(api, httpClient)
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(-1)
 	}
-	client.Headers.Add("Authorization", "Basic "+basicAuth(*projectId, *projectSecret))
+	client.Headers.Add("Authorization", "Basic "+basicAuth(projectId, projectSecret))
 
 	args := flag.Args()
 	if len(args) != 1 {
@@ -77,7 +103,7 @@ func main() {
 		}
 	}()
 
-	resolved, err := client.Unixfs().Add(ctx, file, caopts.Unixfs.Pin(*pin), caopts.Unixfs.Progress(true))
+	resolved, err := client.Unixfs().Add(ctx, file, caopts.Unixfs.Pin(pin), caopts.Unixfs.Progress(true))
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(-1)
