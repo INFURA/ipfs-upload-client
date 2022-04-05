@@ -7,10 +7,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"time"
 
 	ipfsFiles "github.com/ipfs/go-ipfs-files"
 	httpapi "github.com/ipfs/go-ipfs-http-client"
+	coreiface "github.com/ipfs/interface-go-ipfs-core"
 	caopts "github.com/ipfs/interface-go-ipfs-core/options"
+	ipfsPath "github.com/ipfs/interface-go-ipfs-core/path"
 	flag "github.com/spf13/pflag"
 )
 
@@ -77,13 +80,40 @@ func main() {
 		}
 	}()
 
-	resolved, err := client.Unixfs().Add(ctx, file, caopts.Unixfs.Pin(*pin), caopts.Unixfs.Progress(true))
-	if err != nil {
+	var res ipfsPath.Resolved
+	errCh := make(chan error, 1)
+	events := make(chan interface{}, 8)
+	start := time.Now()
+
+	go func() {
+		var err error
+		defer close(events)
+		res, err = client.Unixfs().Add(ctx, file, caopts.Unixfs.Pin(*pin), caopts.Unixfs.Progress(true), caopts.Unixfs.Events(events))
+		errCh <- err
+	}()
+
+	go func() {
+		for event := range events {
+			output, ok := event.(*coreiface.AddEvent)
+			if !ok {
+				panic("unknown event type")
+			}
+
+			if output.Path != nil && output.Name != "" {
+				fmt.Printf("Added %v \n", output.Name)
+			}
+		}
+	}()
+
+	if err := <-errCh; err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(-1)
 	}
 
-	fmt.Println(resolved)
+	fmt.Println(res.Cid().String())
+
+	duration := time.Since(start)
+	fmt.Println(duration)
 }
 
 func basicAuth(projectId, projectSecret string) string {
