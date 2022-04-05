@@ -92,18 +92,16 @@ func main() {
 		errCh <- err
 	}()
 
-	go func() {
-		for event := range events {
-			output, ok := event.(*coreiface.AddEvent)
-			if !ok {
-				panic("unknown event type")
-			}
-
-			if output.Path != nil && output.Name != "" {
-				fmt.Printf("Added %v \n", output.Name)
-			}
+	for event := range events {
+		output, ok := event.(*coreiface.AddEvent)
+		if !ok {
+			panic("unknown event type")
 		}
-	}()
+
+		if output.Path != nil && output.Name != "" {
+			fmt.Printf("Added %v \n", output.Name)
+		}
+	}
 
 	if err := <-errCh; err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
