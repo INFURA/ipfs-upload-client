@@ -29,39 +29,39 @@ func main() {
 
 	if *projectId == "" {
 		_, _ = fmt.Fprintln(os.Stderr, "parameter --id is required")
-		os.Exit(-1)
+		os.Exit(1)
 	}
 	if *projectSecret == "" {
 		_, _ = fmt.Fprintln(os.Stderr, "parameter --secret is required")
-		os.Exit(-1)
+		os.Exit(1)
 	}
 
 	httpClient := &http.Client{}
 	client, err := httpapi.NewURLApiWithClient(*api, httpClient)
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
+		os.Exit(1)
 	}
 	client.Headers.Add("Authorization", "Basic "+basicAuth(*projectId, *projectSecret))
 
 	args := flag.Args()
 	if len(args) != 1 {
 		_, _ = fmt.Fprintln(os.Stderr, "file or directory path required as an argument")
-		os.Exit(-1)
+		os.Exit(1)
 	}
 	path := args[0]
 
 	stat, err := os.Lstat(path)
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
+		os.Exit(1)
 	}
 
 	// also support directory
 	file, err := ipfsFiles.NewSerialFile(path, false, stat)
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
+		os.Exit(1)
 	}
 
 	// trap Ctrl+C and call cancel on the context
@@ -99,19 +99,23 @@ func main() {
 		}
 
 		if output.Path != nil && output.Name != "" {
-			fmt.Printf("Added %v \n", output.Name)
+			_, _ = fmt.Fprintln(os.Stderr, fmt.Sprintf("Added %v", output.Name))
 		}
 	}
 
 	if err := <-errCh; err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
+		exit(start, 1)
 	}
 
-	fmt.Println(res.Cid().String())
+	_, _ = fmt.Fprintln(os.Stdout, res.Cid().String())
+	exit(start, 0)
+}
 
+func exit(start time.Time, exitCode int) {
 	duration := time.Since(start)
-	fmt.Println(duration)
+	_, _ = fmt.Fprintln(os.Stderr, duration)
+	os.Exit(exitCode)
 }
 
 func basicAuth(projectId, projectSecret string) string {
