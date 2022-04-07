@@ -99,7 +99,7 @@ func main() {
 		}
 
 		if output.Path != nil && output.Name != "" {
-			fmt.Printf("Added %v \n", output.Name)
+			_, _ = fmt.Fprintln(os.Stderr, fmt.Sprintf("Added %v", output.Name))
 		}
 	}
 
@@ -108,7 +108,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	fmt.Println(res.Cid().String())
+	_, _ = fmt.Fprintln(os.Stdout, res.Cid().String())
 
 	duration := time.Since(start)
 	fmt.Println(duration)
