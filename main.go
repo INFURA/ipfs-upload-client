@@ -105,13 +105,17 @@ func main() {
 
 	if err := <-errCh; err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(-1)
+		exit(start, -1)
 	}
 
 	_, _ = fmt.Fprintln(os.Stdout, res.Cid().String())
+	exit(start, 1)
+}
 
+func exit(start time.Time, exitCode int) {
 	duration := time.Since(start)
-	fmt.Println(duration)
+	_, _ = fmt.Fprintln(os.Stderr, duration)
+	os.Exit(exitCode)
 }
 
 func basicAuth(projectId, projectSecret string) string {
