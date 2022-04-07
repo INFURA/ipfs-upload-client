@@ -109,7 +109,7 @@ func main() {
 	}
 
 	_, _ = fmt.Fprintln(os.Stdout, res.Cid().String())
-	exit(start, 1)
+	exit(start, 0)
 }
 
 func exit(start time.Time, exitCode int) {
