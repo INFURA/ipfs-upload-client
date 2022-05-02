@@ -14,4 +14,5 @@ Pre-compiled binaries are available in the [latest release page](https://github.
   --pin             whether or not to pin the data (default true)
   --secret string   your Infura ProjectSecret
   --url string      the API URL (default "https://ipfs.infura.io:5001")
+  --verbose         whether or not to print full upload information (default false)
 ```
