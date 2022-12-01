@@ -24,6 +24,7 @@ func main() {
 	projectSecret := flag.String("secret", "", "your Infura ProjectSecret")
 	api := flag.String("url", infuraAPI, "the API URL")
 	pin := flag.Bool("pin", true, "whether or not to pin the data")
+	verbose := flag.Bool("verbose", false, "whether or not to print full upload information")
 
 	flag.Parse()
 
@@ -99,7 +100,11 @@ func main() {
 		}
 
 		if output.Path != nil && output.Name != "" {
-			_, _ = fmt.Fprintln(os.Stderr, fmt.Sprintf("Added %v", output.Name))
+			if *verbose {
+				_, _ = fmt.Fprintln(os.Stderr, fmt.Sprintf("Added %v %v | Bytes: %v | Size: %v", output.Name, output.Path, output.Bytes, output.Size))
+			} else {
+				_, _ = fmt.Fprintln(os.Stderr, fmt.Sprintf("Added %v", output.Name))
+			}
 		}
 	}
 
